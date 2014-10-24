@@ -36,8 +36,8 @@ result_file_name      = ['E://Playground//AST14Py//res.html', '/var/www/res.html
 debug_file_name       = ['E://Playground//AST14Py//debuginfo.txt', '/var/www/debuginfo.txt']
 
 #文件名后缀
-data_file_suff = '.html'
-conf_file_suff = '.txt'
+data_file_suff  = '.html'
+conf_file_suff  = '.txt'
 check_file_suff = '.chk'
 
 #解析投票页面用到的字符串
@@ -57,7 +57,8 @@ vote_time_pref = ') '
 vote_time_suff = ' ID:'
 
 #解析数据使用的变量
-group_num, group_size = 0, 0
+group_num = int()
+group_size = int()
 start_time_abs_min = 0
 max_vote_per_group = 0
 player_name  = []
@@ -66,3 +67,5 @@ vote_time    = [[] for i in xrange(max_player_size)]
 vote_floor   = [[] for i in xrange(max_player_size)]
 player_group = [[] for i in xrange(max_player_size)]
 rank         = [[] for i in xrange(max_player_size)]
+
+debug_info   = []

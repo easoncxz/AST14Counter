@@ -71,7 +71,6 @@ def analyse_floor_b(floor_str):
     if len(token) != 29:
         token = 'N/A'
 
-
     vote_date_str = floor_str[floor_str.find(date_pref) + len(date_pref2):floor_str.find(date_suff)]
     vote_time_str = floor_str[floor_str.find(vote_time_pref) + len(vote_time_pref):floor_str.find(vote_time_suff) - 1]
     vote_date_time = time.strptime(vote_date_str + ' ' + vote_time_str, '%Y/%m/%d %H:%M:%S')
@@ -124,7 +123,7 @@ def load_config_file(file_name):
 
     for i in xrange(group_num):
         for j in xrange(group_size):
-            s = cfg_file.readline()#.split(',')
+            s = cfg_file.readline()
             player_name.append(s)
             player_group[i].append(s)
 
@@ -140,20 +139,20 @@ def has_player(cur_player):
 
 def group_of_user(cur_player):
     for i in xrange(group_num):
-        if player_group[i].count(cur_player)>0:
+        if player_group[i].count(cur_player) > 0:
             return i
 
 
 def add_vote(vote):
-    [floor,token,vote_min] = vote[0:3]
+    [floor, token, vote_min] = vote[0:3]
 
     vote_players = vote[3:]
     if (vote_players.__len__() < 1) or (vote_players[0] == 'N/A'):
         return
 
-    if used_token.count(token)>0:
+    if used_token.count(token) > 0:
         return token_used
-    if token=='N/A':
+    if token == 'N/A':
         return no_token
     used_token.append(token)
 
@@ -177,3 +176,42 @@ def get_final_rank():
         rank[i].sort(reverse=True)
 
     return [group_num, group_size]
+
+
+def analyse_file(dfname):
+    data_file = open(dfname, 'r')
+    data_text = data_file.read()
+    floors = data_text.split('</dd>')
+    floor_num = data_text.count('</dd>')
+    data_file.close()
+
+    for j in xrange(0, floor_num, 1):
+        floor_res = analyse_floor(floors[j])
+        add_vote(floor_res)
+        if (floor_res[0] > -1) and (floor_res[2] != contest_not_start) and (floor_res[2] != contest_ended):
+            if (floor_res[1] == 'N/A'):
+                tmp_s = str(floor_res[0]).zfill(3) + ': Token not found \n'
+            else:
+                tmp_s = str(floor_res[0]).zfill(3) + ':' + str(floor_res[1]) + '\n'
+            debug_info.append(tmp_s)
+
+
+def analyse_file_b(dfname):
+    data_file = open(dfname, 'r')
+    data_text = data_file.read()
+    floors = data_text.split('<dt>')
+    floor_num = data_text.count('<dt>')
+    data_file.close()
+
+    #把分割出来的第一块扔掉
+    floors.remove(floors[0])
+
+    for j in xrange(797, floor_num, 1):
+        floor_res = analyse_floor_b(floors[j])
+        add_vote(floor_res)
+        if (floor_res[0] > -1) and (floor_res[2] != contest_not_start) and (floor_res[2] != contest_ended):
+            if (floor_res[1] == 'N/A'):
+                tmp_s = str(floor_res[0]).zfill(3) + ': Token not found \n'
+            else:
+                tmp_s = str(floor_res[0]).zfill(3) + ':' + str(floor_res[1]) + '\n'
+            debug_info.append(tmp_s)

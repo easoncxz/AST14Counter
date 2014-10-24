@@ -8,13 +8,11 @@ from FetchFile import *
 from datetime import *
 import os
 
-mode = local_mode
-
-debug_info = open(debug_file_name[mode], 'w')
+mode = server_mode
 
 #确定当前日期
 cur_date = datetime.now()
-cur_date += timedelta(hours=-15) #for debug use only
+#cur_date += timedelta(hours=-4) #for debug use only
 date_str = str(cur_date.month).zfill(2) + str(cur_date.day).zfill(2)
 
 #下载当前日期的配置文件
@@ -29,8 +27,9 @@ download_url_to_file(config_file_url, config_file_name)
 #检测配置文件是否正确，如果不正确=没有比赛，直接退出
 #如果是非法的配置文件，不需要转码，本身就是utf-8
 if legal_config_file(config_file_name) == no_contest:
-    debug_info.writelines('No contest')
-    debug_info.close()
+    debug_info_file = open(debug_file_name[mode], 'w')
+    debug_info_file.writelines('No contest')
+    debug_info_file.close()
     chk_file = open(check_file_name, 'w')
     chk_file.write('No contest')
     chk_file.close()
@@ -86,54 +85,15 @@ download_url_to_file(data_url_3, data_file_3_name)
 file_convert_pagecode(data_file_3_name, source_pagecode_2, data_file_3_name, dest_pagecode)
 
 for name in player_name:
-    debug_info.writelines(name+'\n')
+    debug_info.append(name+'\n')
 
-def analyse_file(dfname):
-    data_file = open(dfname, 'r')
-    data_text = data_file.read()
-    floors = data_text.split('</dd>')
-    floor_num = data_text.count('</dd>')
-    data_file.close()
-
-    for j in xrange(0, floor_num, 1):
-        floor_res = analyse_floor(floors[j])
-        add_vote(floor_res)
-        if (floor_res[0] > -1) and (floor_res[2] != contest_not_start) and (floor_res[2] != contest_ended):
-            if (floor_res[1] == 'N/A'):
-                tmp_s = str(floor_res[0]).zfill(3) + ': Token not found \n'
-            else:
-                tmp_s = str(floor_res[0]).zfill(3) + ':' + str(floor_res[1]) + '\n'
-            debug_info.writelines(tmp_s)
-
-
-def analyse_file_b(dfname):
-    data_file = open(dfname, 'r')
-    data_text = data_file.read()
-    floors = data_text.split('<dt>')
-    floor_num = data_text.count('<dt>')
-    data_file.close()
-
-    #把分割出来的第一块扔掉
-    floors.remove(floors[0])
-
-    for j in xrange(797, floor_num, 1):
-        floor_res = analyse_floor_b(floors[j])
-        add_vote(floor_res)
-        if (floor_res[0] > -1) and (floor_res[2] != contest_not_start) and (floor_res[2] != contest_ended):
-            if (floor_res[1] == 'N/A'):
-                tmp_s = str(floor_res[0]).zfill(3) + ': Token not found \n'
-            else:
-                tmp_s = str(floor_res[0]).zfill(3) + ':' + str(floor_res[1]) + '\n'
-            debug_info.writelines(tmp_s)
-
-
+#解析下载的页面
 print 'Download data over. Now start to analyse...'
-
-debug_info.writelines('\nData from :' + data_url_1 + '\n')
+debug_info.append('\nData from :' + data_url_1 + '\n')
 analyse_file(data_file_name)
-debug_info.writelines('\nData from :' + data_url_2 + '\n')
+debug_info.append('\nData from :' + data_url_2 + '\n')
 analyse_file(data_file_2_name)
-debug_info.writelines('\nData from :' + data_url_3 + '\n')
+debug_info.append('\nData from :' + data_url_3 + '\n')
 analyse_file_b(data_file_3_name)
 
 #不知为何不能直接调用group_num和group_size，只能写返回...
@@ -141,8 +101,6 @@ analyse_file_b(data_file_3_name)
 [gn, gs] = get_final_rank()
 
 print 'Analysis over. Now start to output result...'
-
-res_html = open(result_file_name[mode], 'w')
 
 sres = '<html><head>'
 sres += '<meta http-equiv=Content-Type content="text/html;charset=utf-8">'
@@ -160,8 +118,12 @@ for i in xrange(gn):
 
 sres += '</body></html>'
 
+res_html = open(result_file_name[mode], 'w')
 res_html.write(sres)
 res_html.close()
-debug_info.close()
+debug_info_file = open(debug_file_name[mode], 'w')
+for info_str in debug_info:
+    debug_info_file.writelines(info_str)
+debug_info_file.close()
 
 print 'Output result over.'
